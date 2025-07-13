@@ -65,6 +65,14 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
     setMobileOpen(false);
   };
 
+  const handleLogoClick = () => {
+    // Only navigate to home if not already on home page
+    if (currentPage !== 'home') {
+      onTogglePage();
+    }
+    setMobileOpen(false);
+  };
+
   // Mobile drawer content
   const drawer = (
     <Box sx={{ width: 280, pt: 2 }}>
@@ -156,10 +164,16 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
           <Typography 
             variant="h6" 
             component="div" 
+            onClick={handleLogoClick}
             sx={{ 
               flexGrow: isMobile ? 1 : 0,
               mr: isMobile ? 0 : 4,
-              fontSize: isSmallMobile ? '1.1rem' : '1.25rem'
+              fontSize: isSmallMobile ? '1.1rem' : '1.25rem',
+              cursor: 'pointer',
+              userSelect: 'none',
+              '&:hover': {
+                opacity: 0.8,
+              }
             }}
           >
             MovieApp

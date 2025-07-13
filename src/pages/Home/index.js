@@ -37,14 +37,59 @@ const Home = ({ searchQuery = '', genreFilter = '', ratingFilter = '' }) => {
 
   const filteredMovies = useMemo(() => {
     return movies.filter((movie) => {
-      const genreMatch = genreFilter ? movie.genres?.includes(genreFilter) : true;
-      const ratingMatch = ratingFilter ? parseFloat(movie.rating) >= parseFloat(ratingFilter) : true;
+      // Genre filtering - check multiple possible genre properties
+      let genreMatch = true;
+      if (genreFilter) {
+        genreMatch = false;
+        
+        // Check if genres is an array (contains genre objects or strings)
+        if (Array.isArray(movie.genres)) {
+          genreMatch = movie.genres.some(genre => {
+            const genreName = typeof genre === 'string' ? genre : genre.name;
+            return genreName?.toLowerCase() === genreFilter.toLowerCase();
+          });
+        }
+        // Check if genre_ids exists (TMDB API sometimes uses this)
+        else if (movie.genre_ids && Array.isArray(movie.genre_ids)) {
+          // You might need to map genre IDs to names
+          // This is a simplified check - you'd need actual genre mapping
+          genreMatch = movie.genre_ids.length > 0;
+        }
+        // Check if there's a single genre property
+        else if (movie.genre) {
+          genreMatch = movie.genre.toLowerCase() === genreFilter.toLowerCase();
+        }
+        // Fallback: check if the movie object has genre information in other formats
+        else if (movie.genres && typeof movie.genres === 'string') {
+          genreMatch = movie.genres.toLowerCase().includes(genreFilter.toLowerCase());
+        }
+      }
+
+      // Rating filtering - handle different rating properties and formats
+      let ratingMatch = true;
+      if (ratingFilter) {
+        let movieRating = 0;
+        
+        // Check different possible rating properties
+        if (movie.vote_average) {
+          movieRating = parseFloat(movie.vote_average);
+        } else if (movie.rating) {
+          movieRating = parseFloat(movie.rating);
+        } else if (movie.imdbRating) {
+          movieRating = parseFloat(movie.imdbRating);
+        }
+
+        // Parse rating filter (e.g., "9+" -> 9, "8+" -> 8)
+        const minRating = parseFloat(ratingFilter.replace('+', ''));
+        ratingMatch = movieRating >= minRating;
+      }
+
       return genreMatch && ratingMatch;
     });
   }, [movies, genreFilter, ratingFilter]);
 
   const moviesPerPage = 12;
-  const totalPages = Math.ceil(filteredMovies.length / moviesPerPage) || 1; // ensure at least 1 page
+  const totalPages = Math.ceil(filteredMovies.length / moviesPerPage) || 1;
   const paginatedMovies = filteredMovies.slice((page - 1) * moviesPerPage, page * moviesPerPage);
 
   useEffect(() => {
@@ -55,6 +100,12 @@ const Home = ({ searchQuery = '', genreFilter = '', ratingFilter = '' }) => {
     setPage(value);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Debug logging - remove after testing
+  console.log('Filter values:', { genreFilter, ratingFilter });
+  console.log('Total movies:', movies.length);
+  console.log('Filtered movies:', filteredMovies.length);
+  console.log('Sample movie structure:', movies[0]);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 6 }}>
@@ -74,7 +125,7 @@ const Home = ({ searchQuery = '', genreFilter = '', ratingFilter = '' }) => {
           >
             {paginatedMovies.map((movie) => (
               <Box
-                key={movie.imdbId}
+                key={movie.imdbId || movie.id}
                 sx={{
                   flexGrow: 1,
                   flexBasis: {
