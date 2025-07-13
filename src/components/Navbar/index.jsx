@@ -1,122 +1,318 @@
-import React from 'react';
-import { styled, alpha } from '@mui/material/styles';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import InputBase from '@mui/material/InputBase';
-import SearchIcon from '@mui/icons-material/Search';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Button from '@mui/material/Button';
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  TextField,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  useTheme,
+  useMediaQuery,
+  InputAdornment,
+  Collapse
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Search as SearchIcon,
+  Favorite as FavoriteIcon,
+  Home as HomeIcon,
+  FilterList as FilterIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon
+} from '@mui/icons-material';
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: theme.spacing(3),
-  width: '100%',
-  maxWidth: 300,
-}));
+const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingChange }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [genreValue, setGenreValue] = useState('');
+  const [ratingValue, setRatingValue] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  width: '100%',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-  },
-}));
-
-const Navbar = ({ onSearch, onGenreChange, onRatingChange, onTogglePage, currentPage }) => {
-  const [genre, setGenre] = React.useState('');
-  const [rating, setRating] = React.useState('');
-
-  const handleSearchChange = (e) => {
-    onSearch(e.target.value);
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
   };
 
-  const handleGenreChange = (e) => {
-    const value = e.target.value;
-    setGenre(value);
-    onGenreChange(value);
+  const handleSearchChange = (event) => {
+    setSearchValue(event.target.value);
+    onSearch(event.target.value);
   };
 
-  const handleRatingChange = (e) => {
-    const value = e.target.value;
-    setRating(value);
-    onRatingChange(value);
+  const handleGenreChange = (event) => {
+    setGenreValue(event.target.value);
+    onGenreChange(event.target.value);
   };
+
+  const handleRatingChange = (event) => {
+    setRatingValue(event.target.value);
+    onRatingChange(event.target.value);
+  };
+
+  const handlePageToggle = () => {
+    onTogglePage();
+    setMobileOpen(false);
+  };
+
+  // Mobile drawer content
+  const drawer = (
+    <Box sx={{ width: 280, pt: 2 }}>
+      <List>
+        {/* Page Navigation */}
+        <ListItem button onClick={handlePageToggle}>
+          {currentPage === 'home' ? <FavoriteIcon sx={{ mr: 2 }} /> : <HomeIcon sx={{ mr: 2 }} />}
+          <ListItemText 
+            primary={currentPage === 'home' ? 'Favorites' : 'Home'} 
+            sx={{ color: theme.palette.primary.main }}
+          />
+        </ListItem>
+        
+        {/* Search */}
+        <ListItem>
+          <TextField
+            fullWidth
+            placeholder="Search movies..."
+            value={searchValue}
+            onChange={handleSearchChange}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </ListItem>
+
+        {/* Filters Toggle */}
+        <ListItem button onClick={() => setFiltersOpen(!filtersOpen)}>
+          <FilterIcon sx={{ mr: 2 }} />
+          <ListItemText primary="Filters" />
+          {filtersOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+        </ListItem>
+
+        {/* Collapsible Filters */}
+        <Collapse in={filtersOpen} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding>
+            <ListItem sx={{ pl: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Genre</InputLabel>
+                <Select
+                  value={genreValue}
+                  onChange={handleGenreChange}
+                  label="Genre"
+                >
+                  <MenuItem value="">All Genres</MenuItem>
+                  <MenuItem value="action">Action</MenuItem>
+                  <MenuItem value="comedy">Comedy</MenuItem>
+                  <MenuItem value="drama">Drama</MenuItem>
+                  <MenuItem value="horror">Horror</MenuItem>
+                  <MenuItem value="romance">Romance</MenuItem>
+                  <MenuItem value="sci-fi">Sci-Fi</MenuItem>
+                  <MenuItem value="thriller">Thriller</MenuItem>
+                </Select>
+              </FormControl>
+            </ListItem>
+            
+            <ListItem sx={{ pl: 4 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Rating</InputLabel>
+                <Select
+                  value={ratingValue}
+                  onChange={handleRatingChange}
+                  label="Rating"
+                >
+                  <MenuItem value="">All Ratings</MenuItem>
+                  <MenuItem value="9+">9+ Stars</MenuItem>
+                  <MenuItem value="8+">8+ Stars</MenuItem>
+                  <MenuItem value="7+">7+ Stars</MenuItem>
+                  <MenuItem value="6+">6+ Stars</MenuItem>
+                </Select>
+              </FormControl>
+            </ListItem>
+          </List>
+        </Collapse>
+      </List>
+    </Box>
+  );
 
   return (
-    <Box sx={{ flexGrow: 1, mb: 2 }}>
-      <AppBar position="static">
+    <>
+      <AppBar position="static" sx={{ mb: 2 }}>
         <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ mr: 2 }}>
-            MovieMania
+          {/* Logo/Title */}
+          <Typography 
+            variant="h6" 
+            component="div" 
+            sx={{ 
+              flexGrow: isMobile ? 1 : 0,
+              mr: isMobile ? 0 : 4,
+              fontSize: isSmallMobile ? '1.1rem' : '1.25rem'
+            }}
+          >
+            MovieApp
           </Typography>
 
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase placeholder="Search…" inputProps={{ 'aria-label': 'search' }} onChange={handleSearchChange} />
-          </Search>
+          {/* Desktop Navigation */}
+          {!isMobile && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+              {/* Search */}
+              <TextField
+                placeholder="Search movies..."
+                value={searchValue}
+                onChange={handleSearchChange}
+                size="small"
+                sx={{ 
+                  minWidth: 200,
+                  maxWidth: 300,
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  '& .MuiOutlinedInput-root': {
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.7)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'white',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: 'white' }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-          <Select
-            value={genre}
-            onChange={handleGenreChange}
-            displayEmpty
-            sx={{ ml: 2, color: 'white', borderColor: 'white' }}
-            inputProps={{ 'aria-label': 'Genre' }}
-          >
-            <MenuItem value="">All Genres</MenuItem>
-            <MenuItem value="Action">Action</MenuItem>
-            <MenuItem value="Drama">Drama</MenuItem>
-            <MenuItem value="Comedy">Comedy</MenuItem>
-            <MenuItem value="Horror">Horror</MenuItem>
-            <MenuItem value="Fantasy">Fantasy</MenuItem>
-            <MenuItem value="Thriller">Thriller</MenuItem>
-            <MenuItem value="Science Fiction">Science Fiction</MenuItem>
-          </Select>
+              {/* Genre Filter */}
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel sx={{ color: 'white' }}>Genre</InputLabel>
+                <Select
+                  value={genreValue}
+                  onChange={handleGenreChange}
+                  label="Genre"
+                  sx={{
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255, 255, 255, 0.7)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: 'white',
+                    },
+                  }}
+                >
+                  <MenuItem value="">All Genres</MenuItem>
+                  <MenuItem value="action">Action</MenuItem>
+                  <MenuItem value="comedy">Comedy</MenuItem>
+                  <MenuItem value="drama">Drama</MenuItem>
+                  <MenuItem value="horror">Horror</MenuItem>
+                  <MenuItem value="romance">Romance</MenuItem>
+                  <MenuItem value="sci-fi">Sci-Fi</MenuItem>
+                  <MenuItem value="thriller">Thriller</MenuItem>
+                </Select>
+              </FormControl>
 
-          <Select
-            value={rating}
-            onChange={handleRatingChange}
-            displayEmpty
-            sx={{ ml: 2, color: 'white' }}
-            inputProps={{ 'aria-label': 'Rating' }}
-          >
-            <MenuItem value="">All Ratings</MenuItem>
-            <MenuItem value="9">9+</MenuItem>
-            <MenuItem value="8">8+</MenuItem>
-            <MenuItem value="7">7+</MenuItem>
-            <MenuItem value="6">6+</MenuItem>
-          </Select>
+              {/* Rating Filter */}
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel sx={{ color: 'white' }}>Rating</InputLabel>
+                <Select
+                  value={ratingValue}
+                  onChange={handleRatingChange}
+                  label="Rating"
+                  sx={{
+                    color: 'white',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255, 255, 255, 0.7)',
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'white',
+                    },
+                    '& .MuiSvgIcon-root': {
+                      color: 'white',
+                    },
+                  }}
+                >
+                  <MenuItem value="">All Ratings</MenuItem>
+                  <MenuItem value="9+">9+ Stars</MenuItem>
+                  <MenuItem value="8+">8+ Stars</MenuItem>
+                  <MenuItem value="7+">7+ Stars</MenuItem>
+                  <MenuItem value="6+">6+ Stars</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          )}
 
-          <Box sx={{ flexGrow: 1 }} />
+          {/* Desktop Page Toggle Button */}
+          {!isMobile && (
+            <Button
+              color="inherit"
+              onClick={handlePageToggle}
+              startIcon={currentPage === 'home' ? <FavoriteIcon /> : <HomeIcon />}
+              sx={{ ml: 2 }}
+            >
+              {currentPage === 'home' ? 'Favorites' : 'Home'}
+            </Button>
+          )}
 
-          <Button color="inherit" onClick={onTogglePage}>
-            {currentPage === 'home' ? 'Favorites' : 'Home'}
-          </Button>
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
-    </Box>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        variant="temporary"
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 280 },
+        }}
+      >
+        {drawer}
+      </Drawer>
+    </>
   );
 };
 

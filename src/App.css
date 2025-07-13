@@ -36,3 +36,119 @@
     transform: rotate(360deg);
   }
 }
+/* Add these styles to your App.css or create a new responsive.css file */
+
+/* General mobile responsiveness */
+.App {
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure content doesn't overflow on mobile */
+* {
+  box-sizing: border-box;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .App {
+    padding: 0;
+    margin: 0;
+  }
+  
+  /* Ensure buttons and inputs don't overflow */
+  .MuiButton-root,
+  .MuiTextField-root,
+  .MuiFormControl-root {
+    max-width: 100% !important;
+  }
+  
+  /* Adjust spacing for mobile */
+  .MuiToolbar-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    min-height: 56px !important;
+  }
+  
+  /* Ensure search inputs are visible */
+  .MuiInputBase-input {
+    color: inherit !important;
+  }
+  
+  /* Fix drawer z-index issues */
+  .MuiDrawer-root {
+    z-index: 1300 !important;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .MuiToolbar-root {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+  
+  .MuiTypography-h6 {
+    font-size: 1.1rem !important;
+  }
+  
+  /* Ensure content doesn't get cut off */
+  .MuiContainer-root {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .MuiToolbar-root {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* Fix for search input visibility */
+.MuiInputBase-input::placeholder {
+  opacity: 0.7 !important;
+}
+
+/* Ensure proper button coloring */
+.MuiButton-root {
+  color: inherit !important;
+}
+
+/* Fix for Material-UI select dropdown on mobile */
+.MuiSelect-root {
+  color: inherit !important;
+}
+
+/* Ensure proper spacing in mobile drawer */
+.MuiListItem-root {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+/* Responsive container for main content */
+.responsive-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (max-width: 768px) {
+  .responsive-container {
+    padding: 0 8px;
+  }
+}
+
+/* Fix for any overflow issues */
+.MuiAppBar-root {
+  overflow-x: hidden !important;
+}
+
+/* Ensure drawer content doesn't overflow */
+.MuiDrawer-paper {
+  max-width: 90vw !important;
+}
