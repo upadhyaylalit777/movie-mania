@@ -1,12 +1,10 @@
-// src/api/tmdb.js
 import axios from 'axios';
-import { setMovies } from '../slice/movieSlice';
 
 const API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w500';
 
-let genreMap = {}; // memory cache for genre IDs
+let genreMap = {};
 
 const fetchGenreMap = async () => {
   if (Object.keys(genreMap).length > 0) return genreMap;
@@ -26,11 +24,9 @@ const fetchGenreMap = async () => {
   return genreMap;
 };
 
-// ✅ Fetch multiple pages of popular movies (for better pagination)
-export const getPopularMovies = (totalPagesToFetch = 3) => async (dispatch) => {
+export const getPopularMovies = async (totalPagesToFetch = 3) => {
   try {
     await fetchGenreMap();
-
     let allMovies = [];
 
     for (let page = 1; page <= totalPagesToFetch; page++) {
@@ -45,7 +41,6 @@ export const getPopularMovies = (totalPagesToFetch = 3) => async (dispatch) => {
             const creditsRes = await axios.get(`${BASE_URL}/movie/${movie.id}/credits`, {
               params: { api_key: API_KEY },
             });
-
             cast = creditsRes.data.cast.slice(0, 3).map((a) => a.name).join(', ');
           } catch (err) {
             console.warn('Cast fetch failed:', err);
@@ -63,26 +58,20 @@ export const getPopularMovies = (totalPagesToFetch = 3) => async (dispatch) => {
           };
         })
       );
-
       allMovies = allMovies.concat(movies);
     }
-
-    dispatch(setMovies(allMovies));
     return allMovies;
   } catch (err) {
     console.error('Failed to fetch movies:', err);
-    dispatch(setMovies([]));
     return [];
   }
 };
 
-// ✅ Search still only fetches 1 page (as per TMDB's default)
-export const searchMovies = (query) => async (dispatch) => {
-  if (!query.trim()) return dispatch(getPopularMovies());
+export const searchMovies = async (query) => {
+  if (!query.trim()) return [];
 
   try {
     await fetchGenreMap();
-
     const res = await axios.get(`${BASE_URL}/search/movie`, {
       params: {
         api_key: API_KEY,
@@ -100,18 +89,14 @@ export const searchMovies = (query) => async (dispatch) => {
         year: movie.release_date?.split('-')[0] || '',
         rating: movie.vote_average?.toFixed(1) || 'N/A',
         description: movie.overview || 'No description.',
-        actors: 'N/A', // optionally skip cast for search results
+        actors: 'N/A',
         image: movie.poster_path ? `${IMG_BASE}${movie.poster_path}` : null,
         genres: movie.genre_ids.map((id) => genreMap[id] || 'Unknown'),
       }))
     );
-
-    dispatch(setMovies(movies));
     return movies;
-
   } catch (err) {
     console.error('Search failed:', err);
-    dispatch(setMovies([]));
     return [];
   }
 };

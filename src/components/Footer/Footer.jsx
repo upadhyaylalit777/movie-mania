@@ -13,7 +13,7 @@ const Footer = () => {
       <Toolbar>
         <Box sx={{ width: '100%', textAlign: 'center' }}>
           <Typography variant="body2" color="inherit">
-            © {new Date().getFullYear()} MovieMania. All rights reserved.
+            © {new Date().getFullYear()} Moviemania. All rights reserved.
           </Typography>
         </Box>
       </Toolbar>

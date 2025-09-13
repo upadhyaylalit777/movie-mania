@@ -18,7 +18,8 @@ import {
   useTheme,
   useMediaQuery,
   InputAdornment,
-  Collapse
+  Collapse,
+  ListItemIcon, // Added for better icon alignment in the drawer
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -27,10 +28,13 @@ import {
   Home as HomeIcon,
   FilterList as FilterIcon,
   ExpandMore as ExpandMoreIcon,
-  ExpandLess as ExpandLessIcon
+  ExpandLess as ExpandLessIcon,
+  Brightness4 as Brightness4Icon, // Moon icon for dark mode
+  Brightness7 as Brightness7Icon, // Sun icon for light mode
 } from '@mui/icons-material';
 
-const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingChange }) => {
+// Accept the new props for theme handling
+const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingChange, themeMode, onThemeChange }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -65,28 +69,20 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
     setMobileOpen(false);
   };
 
-  const handleLogoClick = () => {
-    // Only navigate to home if not already on home page
-    if (currentPage !== 'home') {
-      onTogglePage();
-    }
-    setMobileOpen(false);
-  };
-
-  // Mobile drawer content
   const drawer = (
     <Box sx={{ width: 280, pt: 2 }}>
       <List>
-        {/* Page Navigation */}
         <ListItem button onClick={handlePageToggle}>
-          {currentPage === 'home' ? <FavoriteIcon sx={{ mr: 2 }} /> : <HomeIcon sx={{ mr: 2 }} />}
-          <ListItemText 
-            primary={currentPage === 'home' ? 'Favorites' : 'Home'} 
-            sx={{ color: theme.palette.primary.main }}
-          />
+          <ListItemIcon>{currentPage === 'home' ? <FavoriteIcon /> : <HomeIcon />}</ListItemIcon>
+          <ListItemText primary={currentPage === 'home' ? 'Favorites' : 'Home'} />
+        </ListItem>
+
+        {/* Theme toggle for mobile drawer */}
+        <ListItem button onClick={onThemeChange}>
+          <ListItemIcon>{themeMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}</ListItemIcon>
+          <ListItemText primary={`Switch to ${themeMode === 'light' ? 'Dark' : 'Light'} Mode`} />
         </ListItem>
         
-        {/* Search */}
         <ListItem>
           <TextField
             fullWidth
@@ -104,24 +100,18 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
           />
         </ListItem>
 
-        {/* Filters Toggle */}
         <ListItem button onClick={() => setFiltersOpen(!filtersOpen)}>
-          <FilterIcon sx={{ mr: 2 }} />
+          <ListItemIcon><FilterIcon /></ListItemIcon>
           <ListItemText primary="Filters" />
           {filtersOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
         </ListItem>
 
-        {/* Collapsible Filters */}
         <Collapse in={filtersOpen} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItem sx={{ pl: 4 }}>
+            <ListItem sx={{ pl: 9 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Genre</InputLabel>
-                <Select
-                  value={genreValue}
-                  onChange={handleGenreChange}
-                  label="Genre"
-                >
+                <Select value={genreValue} onChange={handleGenreChange} label="Genre">
                   <MenuItem value="">All Genres</MenuItem>
                   <MenuItem value="action">Action</MenuItem>
                   <MenuItem value="comedy">Comedy</MenuItem>
@@ -134,14 +124,10 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
               </FormControl>
             </ListItem>
             
-            <ListItem sx={{ pl: 4 }}>
+            <ListItem sx={{ pl: 9 }}>
               <FormControl fullWidth size="small">
                 <InputLabel>Rating</InputLabel>
-                <Select
-                  value={ratingValue}
-                  onChange={handleRatingChange}
-                  label="Rating"
-                >
+                <Select value={ratingValue} onChange={handleRatingChange} label="Rating">
                   <MenuItem value="">All Ratings</MenuItem>
                   <MenuItem value="9+">9+ Stars</MenuItem>
                   <MenuItem value="8+">8+ Stars</MenuItem>
@@ -160,11 +146,17 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
     <>
       <AppBar position="static" sx={{ mb: 2 }}>
         <Toolbar>
-          {/* Logo/Title */}
           <Typography 
             variant="h6" 
             component="div" 
-            onClick={handleLogoClick}
+            onClick={() => {
+              if (currentPage !== 'home') {
+                onTogglePage();
+              }
+              if (mobileOpen) {
+                setMobileOpen(false);
+              }
+            }}
             sx={{ 
               flexGrow: isMobile ? 1 : 0,
               mr: isMobile ? 0 : 4,
@@ -176,13 +168,11 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
               }
             }}
           >
-            MovieApp
+            Moviemania
           </Typography>
 
-          {/* Desktop Navigation */}
           {!isMobile && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexGrow: 1 }}>
-              {/* Search */}
               <TextField
                 placeholder="Search movies..."
                 value={searchValue}
@@ -191,7 +181,7 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
                 sx={{ 
                   minWidth: 200,
                   maxWidth: 300,
-                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  backgroundColor: theme.palette.mode === 'light' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
                   '& .MuiOutlinedInput-root': {
                     color: 'white',
                     '& fieldset': {
@@ -217,7 +207,6 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
                 }}
               />
 
-              {/* Genre Filter */}
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: 'white' }}>Genre</InputLabel>
                 <Select
@@ -251,7 +240,6 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
                 </Select>
               </FormControl>
 
-              {/* Rating Filter */}
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel sx={{ color: 'white' }}>Rating</InputLabel>
                 <Select
@@ -284,19 +272,24 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
             </Box>
           )}
 
-          {/* Desktop Page Toggle Button */}
+          <Box sx={{ flexGrow: 1 }} />
+
           {!isMobile && (
-            <Button
-              color="inherit"
-              onClick={handlePageToggle}
-              startIcon={currentPage === 'home' ? <FavoriteIcon /> : <HomeIcon />}
-              sx={{ ml: 2 }}
-            >
-              {currentPage === 'home' ? 'Favorites' : 'Home'}
-            </Button>
+            <>
+              <Button
+                color="inherit"
+                onClick={handlePageToggle}
+                startIcon={currentPage === 'home' ? <FavoriteIcon /> : <HomeIcon />}
+              >
+                {currentPage === 'home' ? 'Favorites' : 'Home'}
+              </Button>
+              {/* Theme toggle for desktop */}
+              <IconButton sx={{ ml: 1 }} onClick={onThemeChange} color="inherit">
+                {themeMode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+              </IconButton>
+            </>
           )}
 
-          {/* Mobile Menu Button */}
           {isMobile && (
             <IconButton
               color="inherit"
@@ -310,14 +303,13 @@ const Navbar = ({ onTogglePage, currentPage, onSearch, onGenreChange, onRatingCh
         </Toolbar>
       </AppBar>
 
-      {/* Mobile Drawer */}
       <Drawer
         variant="temporary"
         anchor="right"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, // Better open performance on mobile
+          keepMounted: true,
         }}
         sx={{
           display: { xs: 'block', md: 'none' },

@@ -1,4 +1,3 @@
-// src/pages/FavoritesPage.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import Container from '@mui/material/Container';
@@ -9,13 +8,9 @@ import MovieCard from '../../components/MovieCard';
 const FavoritesPage = () => {
     const favorites = useSelector((state) => state.favorites.movies || []);
 
-
-
     return (
         <Container maxWidth="lg" sx={{
-            mt: 4, mb: 6, display: "flex",
-            flexDirection: "column",
-            minHeight: "100vh"
+            mt: 4, mb: 6
         }} >
             <Typography variant="h5" gutterBottom >Favorites</Typography>
             {favorites.length === 0 ? (
@@ -27,22 +22,21 @@ const FavoritesPage = () => {
                         flexWrap: 'wrap',
                         gap: 2,
                         justifyContent: 'center',
-                    
-
                     }}
                 >
                     {favorites.map((movie) => (
                         <Box
                             key={movie.imdbId}
                             sx={{
-                                flexGrow: 1,
+                                // ✅ THE FIX: flexGrow is removed to prevent stretching
                                 flexBasis: {
                                     xs: '100%',
                                     sm: 'calc(50% - 16px)',
                                     md: 'calc(50% - 16px)',
                                     lg: 'calc(25% - 16px)',
                                 },
-                                display: 'flex',
+                                // ✅ Using 'grid' ensures perfect equal-height cards
+                                display: 'grid',
                             }}
                         >
                             <MovieCard {...movie} />
